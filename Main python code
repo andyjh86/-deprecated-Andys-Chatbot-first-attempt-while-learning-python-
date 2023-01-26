@@ -1,33 +1,43 @@
 import tkinter as tk
-import requests
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Load the pre-trained model and tokenizer
-tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-medium")
-model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")
+# model_name = "microsoft/DialoGPT-large"
+model_name = "microsoft/DialoGPT-medium"
+# model_name = "microsoft/DialoGPT-small"
+tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side='left')
+model = AutoModelForCausalLM.from_pretrained(model_name)
+chat_history_ids = torch.tensor([])
 
-# this is where the mechanics are defined
 def get_response(event=None):
+    global chat_history_ids
     # Get the message from the entry box
     message = entry.get()
     # Insert the message in the text widget
     conversation.insert(tk.END, f"You: {message}\n")
     # Encode the user input
-    input_text = message
-    input_ids = tokenizer.encode(input_text, return_tensors="pt")
-    attention_mask = input_ids.ne(tokenizer.eos_token_id)
-    pad_token_id = tokenizer.pad_token_id
-    # Generate a response
-    response_ids = model.generate(input_ids, attention_mask=attention_mask, pad_token_id=pad_token_id, max_length = 50)
-    response_text = tokenizer.decode(response_ids[0], skip_special_tokens=True)
-
+    input_ids = tokenizer.encode(message + tokenizer.eos_token, return_tensors="pt")
+    # concatenate new user input with chat history (if there is)
+    bot_input_ids = torch.cat([chat_history_ids, input_ids], dim=-1) if len(chat_history_ids) > 0 else input_ids
+    # generate a bot response
+    chat_history_ids = model.generate(
+        bot_input_ids,
+        max_length=1000,
+        do_sample=True,
+        top_k=100,
+        temperature=0.75,
+        pad_token_id=tokenizer.eos_token_id
+    )
+    # print the output
+    response_text = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
     # Insert the response in the text widget
+
     conversation.insert(tk.END, f"Bot: {response_text}\n")
     # Clear the entry box
     entry.delete(0, tk.END)
     # Move the view to the end of the text widget
     conversation.see(tk.END)
+
 
 # Create the main window
 root = tk.Tk()
