@@ -2,11 +2,9 @@ import tkinter as tk
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
-# model_name = "microsoft/DialoGPT-large"
 model_name = "microsoft/DialoGPT-medium"
-# model_name = "microsoft/DialoGPT-small"
-tokenizer = AutoTokenizer.from_pretrained(model_name, padding_side='left')
-model = AutoModelForCausalLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir="C:/Zoo/tokenizer-cache", padding_side='left')
+model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir="C:/Zoo/model-cache")
 chat_history_ids = torch.tensor([])
 
 def get_response(event=None):
