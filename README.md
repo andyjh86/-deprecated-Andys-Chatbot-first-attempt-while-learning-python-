@@ -1,7 +1,9 @@
 ##################################################################
+
 Keeping this here to remind myself how much I learned from doing this. This was well before Llamas based LLM's and quantasization was common.
 
 I'm now working on a much better version using llama-cpp-python
+
 ##################################################################
 
 The code uses a DialoGPT-medium model from the Hugging Face Transformers library to generate responses to user inputs. The model is stored locally on the machine and is loaded using the "from_pretrained" method. This method retrieves the model from the Hugging Face model hub if it is not found in the specified cache directory. The cache directory for both the tokenizer and the model are set to "C:/Zoo/tokenizer-cache" and "C:/Zoo/model-cache", respectively.
